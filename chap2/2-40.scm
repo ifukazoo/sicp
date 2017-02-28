@@ -21,7 +21,7 @@
   (flatmap
     (lambda (i)
       (map (lambda (j) (list i j)) (enumerate-interval 1 (- i 1))))
-         (enumerate-interval 2 n)))
+         (enumerate-interval 1 n)))
 
 (define (prime-sum? pair)
   (prime? (+ (car pair) (cadr pair))))
