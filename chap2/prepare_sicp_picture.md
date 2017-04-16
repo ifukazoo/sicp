@@ -7,3 +7,6 @@
 
 ### 実行
 1. DrRacketでファイルを開き,Ctrl+Rで実行する
+
+### DrRacketで枠を描画する話
+https://gist.github.com/etscrivner/e0105d9f608b00943a49
