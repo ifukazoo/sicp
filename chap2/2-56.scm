@@ -6,11 +6,11 @@
                       (deriv (augent exp) var)))
         ((product? exp) (make-sum
                           (make-product
-                            (multiplicand exp)
-                            (deriv (multiplier exp) var))
-                          (make-product
                             (multiplier exp)
-                            (deriv (multiplicand exp) var))))
+                            (deriv (multiplicand exp) var))
+                          (make-product
+                            (deriv (multiplier exp) var)
+                            (multiplicand exp))))
         ((exponentiation? exp) (make-product
                                  (exponent exp)  ; n
                                  (make-product
@@ -68,11 +68,12 @@
 (define (exponent e)
   (caddr e))
 
+;===============================================================================
+; テスト
 (exponentiation? (make-exponentiation 'a '6))
 (base '(** a 6))
 (exponent (make-exponentiation 'a '6))
 
-; テスト
 (deriv '(* x y) 'x)
 (deriv '(* (* x y) (+ x 3)) 'x)
 (deriv '(* (** x 3) 2) 'x)
