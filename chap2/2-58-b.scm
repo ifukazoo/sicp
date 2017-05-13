@@ -49,28 +49,30 @@
         (else (list m1 '* m2))))
 
 ;; セレクタ
-;;; 記号の左辺,右辺をリストにして返すが,要素が1つの場合はリストから出して返す
+;;; 記号の左辺,右辺をリストにして返す
 (define (leftside sym)
-  (lambda (exp)
-    (define (leftside_ e lst)
-      (if (eq? sym (car e))
-        (if (null? (cdr lst))
-          (car lst)
-          (reverse lst))
-        (leftside_ (cdr e) (cons (car e) lst))))
-    (leftside_ exp '())))
+  (define (inner lst)
+    (if (eq? sym (car lst))
+      '()
+      (cons (car lst) (inner (cdr lst)))))
+  inner
+  )
 (define (rightside sym)
-  (define (rightside_ exp)
-    (if (eq? sym (car exp))
-      (if (null? (cddr exp))
-        (cadr exp)
-        (cdr exp))
-      (rightside_ (cdr exp))))
-  rightside_)
-(define (multiplier   p) ((leftside  '*) p))
-(define (addend       s) ((leftside  '+) s))
-(define (multiplicand p) ((rightside '*) p))
-(define (augent       s) ((rightside '+) s))
+  (define (inner lst)
+    (if (eq? sym (car lst))
+      (cdr lst)
+      (inner (cdr lst))))
+  inner
+  )
+;;; 要素が1つの場合はリストから出して返す
+(define (trim-paren-if-scalar lst)
+  (if (null? (cdr lst))
+    (car lst)
+    lst))
+(define (multiplier   p) (trim-paren-if-scalar ((leftside  '*) p)))
+(define (addend       s) (trim-paren-if-scalar ((leftside  '+) s)))
+(define (multiplicand p) (trim-paren-if-scalar ((rightside '*) p)))
+(define (augent       s) (trim-paren-if-scalar ((rightside '+) s)))
 
 ;===============================================================================
 ; テスト
