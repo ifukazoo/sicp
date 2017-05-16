@@ -24,6 +24,19 @@
         (else (cons y (adjoin-set x (cdr set))))
         ))))
 
+(define (union-set set1 set2)
+  (cond
+    ((and (null? set1) (null? set2)) '())
+    ((null? set1)  set2)
+    ((null? set2)  set1)
+    (else
+      (let ((x (car set1)) (y (car set2)))
+        (cond
+          ((< x y) (cons x (union-set (cdr set1) set2)))
+          ((= x y) (cons x (union-set (cdr set1) (cdr set2))))
+          (else    (cons y (union-set set1 (cdr set2)))) ;(> x y)
+          )))))
+
 ;===============================================================================
 ; テスト
 
@@ -33,7 +46,10 @@
 (element-of-set? 11 '(1 2 3 4 5 6 7 8 9 10))
 '(2 5 9 10)
 '(1 2 3 5 6 8 9)
+'(2 3 4 5 6 7 8)
 (intersection-set '(2 5 9 10) '(1 2 3 5 6 8 9))
+(union-set '(2 5 9 10) '(1 2 3 5 6 8 9))
+(union-set (union-set '(2 5 9 10) '(1 2 3 5 6 8 9)) '(2 3 4 5 6 7 8))
 (adjoin-set 1 '(2 5 9 10))
 (adjoin-set 3 '(2 5 9 10))
 (adjoin-set 6 '(2 5 9 10))
