@@ -2,8 +2,8 @@
 
 ;; 頭がこんがらがったので整理
 ;; 1)文字に対して頻度の重みをつける.
-;; 2)ハフマン符号化木が作成できる(いわば表)
-;; 3)符号化,復号化ができる
+;; 2)ハフマン符号化木が作成できる(いわば表).
+;; 3)2)の木に対する符号化,復号化の実装を検討できる.
 
 ;; この章には符号化の関数の説明がないので混乱したのが原因
 
@@ -35,11 +35,13 @@
 ;     葉の場合木の先頭に戻る
 ;   右枝が含んでいた場合1を足す
 ;     葉の場合木の先頭に戻る
-(define (include? tar lst)
+;
+; ※ 後日記載 練習問題2.68に,よりシンプルな方法あり
+(define (include? sym lst)
   (cond
     ((null? lst) #f)
-    ((eq? tar (car lst)) #t)
-    (else (include? tar (cdr lst)))))
+    ((eq? sym (car lst)) #t)
+    (else (include? sym (cdr lst)))))
 (define (encode lst tree)
   (define (encode-1 lst current-branch)
     (if (null? lst)
