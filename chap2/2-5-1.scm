@@ -1,5 +1,4 @@
 ;; put/getの実装
-(define system-table '())
 (define (eql? a b)
   (define (list-eq? a b)
     (cond
@@ -9,19 +8,29 @@
       (else #f)))
   (cond
     ((and (pair? a) (pair? b)) (list-eq? a b))
-    ((and (not (pair? a)) (not (pair? b))) (eq? a b))
+    ((not (or (pair? a) (pair? b))) (eq? a b))
     (else #f))
   )
+(define (head t) (car t))
+(define (tail t) (cdr t))
+(define (key kv) (car kv))
+(define (val kv) (cdr kv))
+(define (make-kv k v) (cons k v))
+
+(define (put-kv table k v)
+  (cond
+    ((null? table) (list (make-kv k v)))
+    ((eql? k (key (head table))) (cons (make-kv k v) (tail table))) ; replace
+    (else (cons (make-kv k v) table))))
+
 (define (get-kv table k)
   (cond
     ((null? table) '())
-    ((eql? k (car (car table))) (cdr (car table)))
-    (else (get-kv (cdr table) k))))
-(define (put-kv table k v)
-  (cond
-    ((null? table) (list (cons k v)))
-    ((eql? k (car (car table))) (cons (cons k v) (cdr table)))
-    (else (cons (car table) (put-kv (cdr table) k v)))))
+    ((eql? k (key (head table))) (val (head table)))
+    (else (get-kv (tail table) k))))
+
+;;; システムテーブルインターフェース
+(define system-table '())
 (define (get op type)
   (let ((result (get-kv (get-kv system-table op) type)))
     (if (null? result) #f result)))
