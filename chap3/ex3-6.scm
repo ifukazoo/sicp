@@ -1,0 +1,20 @@
+(use data.random)
+(define (rand op)
+  (cond
+    ((eq? op 'generate ) (uint8s))
+    ((eq? op 'reset    )
+     (lambda (new-value)
+       (set! (random-data-seed) new-value)))
+    (else (error 'unknown-option op))))
+
+; テスト
+((rand 'reset) 1)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+((rand 'reset) 1)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
+(rand 'generate)
