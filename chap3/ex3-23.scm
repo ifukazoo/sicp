@@ -1,0 +1,146 @@
+(define (make-deque)
+  (cons '() '()))
+(define (empty-queue? queue) (null? (car queue)))
+(define (front-deque queue)
+  (if (empty-queue? queue)
+    (error "queue is empty")
+    (get-item (front-ptr queue))))
+(define (rear-deque queue)
+  (if (empty-queue? queue)
+    (error "queue is empty")
+    (get-item (rear-ptr queue))))
+
+(define (front-insert-deque! queue item)
+  (let ((new-node (make-node item)))
+    (if (empty-queue? queue)
+      (begin
+        (set-front-ptr! queue new-node)
+        (set-rear-ptr!  queue new-node)
+        )
+      (begin
+        (let ((head-node (front-ptr queue)))
+          (set-next! new-node head-node)
+          (set-prev! head-node new-node)
+          (set-front-ptr! queue new-node)
+          )
+        )
+      )
+    )
+  )
+(define (rear-insert-deque! queue item)
+  (let ((new-node (make-node item)))
+    (if (empty-queue? queue)
+      (begin
+        (set-front-ptr! queue new-node)
+        (set-rear-ptr!  queue new-node)
+        )
+      (begin
+        (let ((tail-node (rear-ptr queue)))
+          (set-next! tail-node new-node)
+          (set-prev! new-node tail-node)
+          (set-rear-ptr! queue new-node)
+          )
+        )
+      )
+    )
+  )
+(define (front-delete-deque! queue)
+  (if (empty-queue? queue)
+    (error "DELETE! called with an empty queue")
+    (let (
+          (item (get-item (front-ptr queue)))
+          (second-node (get-next (front-ptr queue)))
+          )
+      (set-front-ptr! queue second-node)
+      (set-prev! second-node '())
+      item)
+    )
+  )
+(define (rear-delete-deque! queue)
+  (if (empty-queue? queue)
+    (error "DELETE! called with an empty queue")
+    (let (
+          (item (get-item (rear-ptr queue)))
+          (second-to-last-node (get-prev (rear-ptr queue)))
+          )
+      (set-rear-ptr! queue second-to-last-node)
+      (set-next! second-to-last-node '())
+      item)
+    )
+  )
+(define (print-queue queue)
+  (define sp "")
+  (define (print-node node)
+    (display sp)
+    (set! sp " ")
+    (if
+      (null? node)
+      (display "\n")
+      (begin
+        (display (get-item node))
+        (print-node (get-next node))
+        )))
+  (if (empty-queue? queue)
+    (error "PRINT called with an empty queue")
+    (print-node (front-ptr queue))))
+
+; private手続き
+(define (front-ptr queue) (car queue))
+(define (rear-ptr  queue) (cdr queue))
+(define (set-front-ptr! queue item) (set-car! queue item))
+(define (set-rear-ptr!  queue item) (set-cdr! queue item))
+
+(define (make-node item) (cons item (cons '() '())))
+(define (get-item node) (car node))
+(define (get-prev node) (car (cdr node)))
+(define (get-next node) (cdr (cdr node)))
+(define (set-prev! node other) (set-car! (cdr node) other))
+(define (set-next! node other) (set-cdr! (cdr node) other))
+
+; テスト
+(define q (make-deque))
+(empty-queue? q)
+(front-deque q)
+(rear-deque q)
+
+(front-insert-deque! q 1)
+(print-queue q)
+
+(front-insert-deque! q 2)
+(print-queue q)
+
+(front-insert-deque! q 3)
+(print-queue q)
+
+(front-insert-deque! q 4)
+(print-queue q)
+
+(rear-insert-deque! q 5)
+(print-queue q)
+
+(rear-insert-deque! q 6)
+(print-queue q)
+
+(rear-insert-deque! q 7)
+(print-queue q)
+
+(rear-insert-deque! q 8)
+(print-queue q)
+
+(front-delete-deque! q)
+(print-queue q)
+
+(rear-delete-deque! q)
+(print-queue q)
+
+(front-delete-deque! q)
+(print-queue q)
+
+(front-delete-deque! q)
+(print-queue q)
+
+(rear-delete-deque! q)
+(print-queue q)
+
+(rear-delete-deque! q)
+(print-queue q)
