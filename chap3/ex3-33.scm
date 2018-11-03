@@ -1,0 +1,120 @@
+(define (averager left right average)
+  (define (process-new-value)
+    (cond
+      ((and (has-value? left) (has-value? right))
+       (set-value! average (/ (+ (get-value left) (get-value right)) 2) me))
+      ((and (has-value? right) (has-value? average))
+       (set-value! left (- (* (get-value average) 2) (get-value right)) me))
+      ((and (has-value? average) (has-value? left))
+       (set-value! right (- (* (get-value average) 2) (get-value left)) me))))
+
+  (define (process-forget-value)
+    (forget-value! left me)
+    (forget-value! right me)
+    (forget-value! average me)
+    (process-new-value))
+
+  (define (me request)
+    (cond
+      ((eq? request 'I-have-a-value) (process-new-value))
+      ((eq? request 'I-lost-my-value) (process-forget-value))
+      (else (error "Unknown request: AVERAGER" request))))
+  (connect left me)
+  (connect right me)
+  (connect average me)
+  me)
+
+(define (has-value? connector) (connector 'has-value?))
+(define (get-value connector) (connector 'value))
+(define (set-value! connector newval informant) ((connector 'set-value!) newval informant))
+(define (forget-value! connector retractor) ((connector 'forget) retractor))
+(define (connect connector new-constraint) ((connector 'connect) new-constraint))
+
+(define (make-connector)
+  (let ((value #f) (informant #f) (constraints '()))
+    (define (set-my-value newval setter)
+      (cond
+        ((not (has-value? me))
+         (set! value newval)
+         (set! informant setter)
+         (for-each-except setter inform-about-value constraints))
+        ((not (= value newval))
+         (error "Contradiction" (list value newval)))
+        (else 'ignored)))
+    (define (forget-my-value retractor)
+      (if (eq? retractor informant)
+        (begin
+          (set! informant #f)
+          (for-each-except retractor inform-about-no-value constraints))
+        'ignored))
+    (define (connect new-constraint)
+      (if (not (memq new-constraint constraints))
+        (set! constraints (cons new-constraint constraints)))
+      (if (has-value? me)
+        (inform-about-value new-constraint))
+      'done)
+    (define (me request)
+      (cond
+        ((eq? request 'has-value?) (if informant #t #f))
+        ((eq? request 'value) value)
+        ((eq? request 'set-value!) set-my-value)
+        ((eq? request 'forget) forget-my-value)
+        ((eq? request 'connect) connect)
+        (else (error "Unknown operation: CONNECTOR" request))))
+    me))
+(define (for-each-except exception procedure lst)
+  (define (loop items)
+    (cond
+      ((null? items) 'done)
+      ((eq? (car items) exception) (loop (cdr items)))
+      (else (procedure (car items))
+            (loop (cdr items)))))
+  (loop lst))
+
+(define (probe name connector)
+  (define (print-probe value)
+    (newline) (display "Probe: ") (display name) (display " = ") (display value))
+  (define (process-new-value)
+    (print-probe (get-value connector)))
+  (define (process-forget-value)
+    (print-probe "?"))
+  (define (me request)
+    (cond
+      ((eq? request 'I-have-a-value) (process-new-value))
+      ((eq? request 'I-lost-my-value) (process-forget-value))
+      (else (error "Unknown request: PROBE" request))))
+  (connect connector me)
+  me)
+
+; 値を持ったことを伝える
+(define (inform-about-value constraint) (constraint 'I-have-a-value))
+; 値を失ったことを伝える
+(define (inform-about-no-value constraint) (constraint 'I-lost-my-value))
+
+;定数
+(define (constant value connector)
+  (define (me request)
+    (error "Unknown request: CONSTANT" request)) ;requestは受け付けない
+  (connect connector me)
+  (set-value! connector value me)
+  me)
+
+;===============================================================================
+; テスト
+(define A (make-connector))
+(define B (make-connector))
+(define C (make-connector))
+(averager A B C)
+(probe "A=" A)
+(probe "B=" B)
+(probe "C=" C)
+
+(set-value! A 1.0 'me)
+(set-value! B 2.0 'me)
+(forget-value! A 'me)
+(forget-value! B 'me)
+
+(get-value A)
+(set-value! A 7.0 'me)
+(forget-value! C 'me)
+(set-value! C 13.0 'me)
